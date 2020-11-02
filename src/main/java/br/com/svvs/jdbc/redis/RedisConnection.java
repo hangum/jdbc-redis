@@ -29,8 +29,8 @@ public class RedisConnection implements java.sql.Connection {
     private boolean isClosed = true;
     private boolean autoCommit = true;
     private int db = 0;
-	private int maxRetries = 3;
-	private int maxTimeout = 3000;
+	private int maxRetries = 2;
+	private int maxTimeout = 200;
 	private Properties info = null;
 
 
