@@ -382,19 +382,24 @@ public class RedisConnection implements java.sql.Connection {
 		Object objRet = null;
     	int iCounter = 0;
 		
+    	StringBuffer sbErrorMsg = new StringBuffer();
 		while(iCounter < maxRetries) {
 			try {
 				objRet =  io.sendRaw(redisMsg);
 				break;
 			}
 			catch(Exception e) {
-				System.out.println("Connection to redis is closed: "+e.getMessage());
+				e.printStackTrace();
+//				System.out.println("Connection to redis is closed: "+e.getMessage());
+				sbErrorMsg.append(e.getMessage() + "\r\n");
 				try {
 					io.reconnect();
 					initRedis();
 				}
 				catch(Exception io) {
-					System.out.println("Problem connecting to redis: "+io.getMessage());
+					io.printStackTrace();
+					sbErrorMsg.append("Problem connecting to redis: "+io.getMessage() + "\r\n");
+//					System.out.println("Problem connecting to redis: "+io.getMessage());
 				}
     			try {
     				Thread.sleep(maxTimeout);
@@ -407,7 +412,7 @@ public class RedisConnection implements java.sql.Connection {
 		}
 		
 		if (iCounter == maxRetries) {
-			throw new SQLException("Could not connect to redis");
+			throw new SQLException(sbErrorMsg.toString());//"Could not connect to redis");
 		}
 		
 		return objRet;
