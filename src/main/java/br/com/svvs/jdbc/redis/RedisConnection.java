@@ -380,40 +380,48 @@ public class RedisConnection implements java.sql.Connection {
     
     protected Object msgToServer(String redisMsg) throws SQLException {    	
 		Object objRet = null;
-    	int iCounter = 0;
 		
-    	StringBuffer sbErrorMsg = new StringBuffer();
-		while(iCounter < maxRetries) {
+//		
+//		재귀 호출되어 무한 루프로 빠지는 경우가 있습니다. 
+//		예를 들어 패스워드를 가진 연결 시도에서요.  - 20.11.03. hangum
+//		데이터 가져올때 문제가 발생하면 문제 발생했음을 알리고 연결을 끊는게 답이지 싶습니다. 
+//		
+//    	int iCounter = 0;
+//		
+//    	StringBuffer sbErrorMsg = new StringBuffer();
+//		while(iCounter < maxRetries) {
 			try {
-				objRet =  io.sendRaw(redisMsg);
-				break;
+				objRet = io.sendRaw(redisMsg);
+//				break;
 			}
 			catch(Exception e) {
 				e.printStackTrace();
 //				System.out.println("Connection to redis is closed: "+e.getMessage());
-				sbErrorMsg.append(e.getMessage() + "\r\n");
-				try {
-					io.reconnect();
-					initRedis();
-				}
-				catch(Exception io) {
-					io.printStackTrace();
-					sbErrorMsg.append("Problem connecting to redis: "+io.getMessage() + "\r\n");
-//					System.out.println("Problem connecting to redis: "+io.getMessage());
-				}
-    			try {
-    				Thread.sleep(maxTimeout);
-    			}
-    			catch(InterruptedException ie) {
-    				System.out.println("Could not interrupt thread: "+ie.getMessage());
-    			}
+//				sbErrorMsg.append(e.getMessage() + "\r\n");
+				throw new SQLException(e);//"Could not connect to redis");
+				
+//				try {
+//					io.reconnect();
+//					initRedis();
+//				}
+//				catch(Exception io) {
+//					io.printStackTrace();
+//					sbErrorMsg.append("Problem connecting to redis: "+io.getMessage() + "\r\n");
+////					System.out.println("Problem connecting to redis: "+io.getMessage());
+//				}
+//    			try {
+//    				Thread.sleep(maxTimeout);
+//    			}
+//    			catch(InterruptedException ie) {
+//    				System.out.println("Could not interrupt thread: "+ie.getMessage());
+//    			}
 			}
-			iCounter++;
-		}
+//			iCounter++;
+//		}
 		
-		if (iCounter == maxRetries) {
-			throw new SQLException(sbErrorMsg.toString());//"Could not connect to redis");
-		}
+//		if (iCounter == maxRetries) {
+//			throw new SQLException(sbErrorMsg.toString());//"Could not connect to redis");
+//		}
 		
 		return objRet;
     }
